@@ -3,8 +3,20 @@ name = "ewelink-api"
 version = "0.1.0"
 description = "eWeLink API for Python"
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = []
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [  ]
+
+[dependency-groups]
+dev = [
+  "pre-commit>=4.5.1",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = [ "ewelink" ]
 

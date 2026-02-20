@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class DeviceType(Enum):
     UNKNOWN = 0
     SOCKET = 1
@@ -54,11 +55,12 @@ class DeviceType(Enum):
     NEW_HUMIDIFIER = 1002
     WARM_AIR_BLOWER = 1003
 
+
 class Power(Enum):
-    off = 'off'
-    on = 'on'
-    stay = 'stay'
-    unknown = 'unknown'
+    off = "off"
+    on = "on"
+    stay = "stay"
+    unknown = "unknown"
 
     def __init__(self, *args) -> None:
         self.channels = tuple()
@@ -69,15 +71,27 @@ class Power(Enum):
 
     def to_dict(self) -> dict[str, list[dict[str, str | int]] | str | int]:
         if self.channels:
-            return dict(switches = [dict(switch = self.value, outlet = channel) for channel in self.channels])
+            return dict(
+                switches=[
+                    dict(switch=self.value, outlet=channel) for channel in self.channels
+                ]
+            )
         else:
-            return dict(switch = self.value)
+            return dict(switch=self.value)
+
 
 class _powerdict(dict):
     def __missing__(self, channels: tuple[int, ...] | int):
-        if not isinstance(channels, (tuple, int,)):
+        if not isinstance(
+            channels,
+            (
+                tuple,
+                int,
+            ),
+        ):
             raise KeyError(f'Key "{channels}" not found.')
         channels = channels if isinstance(channels, tuple) else (channels,)
+
         class _deferredpower:
             on = property(lambda _: Power.on[channels])
             off = property(lambda _: Power.off[channels])
@@ -85,7 +99,9 @@ class _powerdict(dict):
 
         return _deferredpower()
 
+
 Power._member_map_ = _powerdict(Power._member_map_)
+
 
 class DeviceChannelLengh(Enum):
     SOCKET = 1
@@ -107,11 +123,13 @@ class DeviceChannelLengh(Enum):
     SWITCH_4 = 4
     CUN_YOU_DOOR = 4
 
+
 class Region(Enum):
-    US = 'us'
-    AS = 'as'
-    EU = 'eu'
-    CN = 'cn'
+    US = "us"
+    AS = "as"
+    EU = "eu"
+    CN = "cn"
+
 
 class CountryCodes(Enum):
     UNKNOWN = "0"
