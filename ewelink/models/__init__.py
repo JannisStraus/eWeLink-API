@@ -1,12 +1,10 @@
 from typing import Iterable
 
-from .enumerations import DeviceType, DeviceChannelLengh, Power, CountryCodes, Region
-from .user import AppInfo, ClientInfo, ClientUser
-from .device import Device, Network, Pulse
-from .asset import Asset
-from .object import Object
+from .device import Device
+from .enumerations import Power
 
 PowerState = Power
+
 
 class Devices(list[Device]):
     def __init__(self, devices: Iterable[Device]):
@@ -14,6 +12,8 @@ class Devices(list[Device]):
 
     def get(self, id: str) -> Device | None:
         for device in self:
-            if device.id == id: return device
+            if device.id == id:
+                return device
+
 
 del Iterable

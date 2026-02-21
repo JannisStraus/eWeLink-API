@@ -1,8 +1,10 @@
-import unittest
 import os
+import unittest
+
 import ewelink
 from ewelink import Client
 from ewelink.models.enumerations import Region
+
 
 class TestUser(unittest.IsolatedAsyncioTestCase):
     email = os.environ["EWELINK_EMAIL"]
@@ -26,6 +28,7 @@ class TestUser(unittest.IsolatedAsyncioTestCase):
     # @ewelink.login(password, phone=phone, region=region)
     # async def test_login_with_phone_with_region(self, client: Client) -> None:
     #     self.assertEqual(client.region, self.region_enum)
+
 
 if __name__ == "__main__":
     unittest.main()

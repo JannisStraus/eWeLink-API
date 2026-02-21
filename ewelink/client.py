@@ -1,29 +1,22 @@
-import aiohttp ,\
-       base64, \
-       hashlib,\
-       hmac,\
-       time,\
-       random,\
-       json,\
-       uuid,\
-       re,\
-       asyncio
-
-from typing import TypeVar, Type, Callable, Coroutine, Any
-from functools import wraps
+import asyncio
 from dataclasses import dataclass
+from functools import wraps
+from typing import Any, Callable, Coroutine, Type, TypeVar
 
-from .models import ClientUser, Device, Devices, Region
 from .http import HttpClient
-from .ws import WebSocketClient
+from .models import ClientUser, Device, Devices, Region
 from .state import Connection
+from .ws import WebSocketClient
 
 T = TypeVar("T")
 V = TypeVar("V")
 ClientT = TypeVar("ClientT", bound="Client")
 GatewayT = TypeVar("GatewayT", bound="Gateway")
 
-Decorator = Callable[[Callable[..., Coroutine[Any, Any, V]]], Callable[..., Coroutine[Any, Any, V]]]
+Decorator = Callable[
+    [Callable[..., Coroutine[Any, Any, V]]], Callable[..., Coroutine[Any, Any, V]]
+]
+
 
 @dataclass
 class Gateway:
@@ -32,37 +25,47 @@ class Gateway:
 
     @classmethod
     def from_dict(cls: Type[GatewayT], data: dict[str, str | int]) -> GatewayT:
-        return cls(domain = data.get("domain"), port = data.get("port"))
+        return cls(domain=data.get("domain"), port=data.get("port"))
+
 
 class Client:
     http: HttpClient
     gateway: Gateway | None = None
     ws: WebSocketClient | None
-    _devices: dict[str, Device] = {}
     user: ClientUser | None
     loop: asyncio.AbstractEventLoop
 
-    def __init__(self, password: str, email: str | None = None, phone: str | int | None = None, *, region: str = 'us'):
+    def __init__(
+        self,
+        password: str,
+        email: str | None = None,
+        phone: str | int | None = None,
+        *,
+        region: str = "us",
+    ):
         super().__init__()
-        self.http = HttpClient(password = password, email = email, phone = phone, region = region)
+        self.http = HttpClient(
+            password=password, email=email, phone=phone, region=region
+        )
         self.ws = None
         self.user = None
+        self._devices: dict[str, Device] = {}
 
     async def login(self):
         self.loop = asyncio.get_event_loop()
         await self.http._create_session(loop=self.loop)
-        self.user = ClientUser(data = await self.http.login(), http=self.http)
-        self.ws = WebSocketClient(http = self.http, user = self.user)
+        self.user = ClientUser(data=await self.http.login(), http=self.http)
+        self.ws = WebSocketClient(http=self.http, user=self.user)
         self.gateway = Gateway.from_dict(await self.http.get_gateway())
         await self.ws.create_websocket(self.gateway.domain, self.gateway.port)
-        self._devices =\
-        {
-            device['deviceid']: Device(data = device, state = self._get_state()) for device in (await self.http.get_devices()).get('devicelist', [])
+        self._devices = {
+            device["deviceid"]: Device(data=device, state=self._get_state())
+            for device in (await self.http.get_devices()).get("devicelist", [])
         }
         self.ws.set_devices(self._devices)
 
     def _get_state(self) -> Connection:
-        return Connection(ws = self.ws, http = self.http)
+        return Connection(ws=self.ws, http=self.http)
 
     def get_device(self, id: str) -> Device | None:
         return self.devices.get(id)
@@ -76,14 +79,31 @@ class Client:
         return Region[self.http.region.upper()]
 
     @classmethod
-    def setup(cls: Type[ClientT], password: str, email: str | None = None, phone: str | int | None = None, *, region: str = 'us') -> Decorator:
-        return _build_login_decorator(cls(password, email, phone, region = region))
+    def setup(
+        cls: Type[ClientT],
+        password: str,
+        email: str | None = None,
+        phone: str | int | None = None,
+        *,
+        region: str = "us",
+    ) -> Decorator:
+        return _build_login_decorator(cls(password, email, phone, region=region))
 
-def login(password: str, email: str | None = None, phone: str | int | None = None, *, region: str = 'us') -> Decorator:
-    return _build_login_decorator(Client(password, email, phone, region = region))
+
+def login(
+    password: str,
+    email: str | None = None,
+    phone: str | int | None = None,
+    *,
+    region: str = "us",
+) -> Decorator:
+    return _build_login_decorator(Client(password, email, phone, region=region))
+
 
 def _build_login_decorator(client: Client) -> Decorator:
-    def decorator(f: Callable[..., Coroutine[Any, Any, V]]) -> Callable[..., Coroutine[Any, Any, V]]:
+    def decorator(
+        f: Callable[..., Coroutine[Any, Any, V]],
+    ) -> Callable[..., Coroutine[Any, Any, V]]:
         @wraps(f)
         async def wrapper(*args: Any, **kwargs: Any) -> V:
             try:
@@ -95,5 +115,7 @@ def _build_login_decorator(client: Client) -> Decorator:
                     await session.close()
                 if client.ws and not client.ws.closed:
                     await client.ws.close()
+
         return wrapper
+
     return decorator

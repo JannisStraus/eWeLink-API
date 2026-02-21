@@ -1,0 +1,105 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.1
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        language_version: python3.12
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.12.1
+    hooks:
+      - id: pyproject-fmt
+        types: [toml]
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.20.0
+    hooks:
+      - id: markdownlint-cli2
+        args: [--fix]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        types: [markdown]
+
+  - repo: local
+    hooks:
+      - id: export-requirements
+        name: Export requirements
+        entry: uv
+        args:
+          [
+            "export",
+            "--format",
+            "requirements.txt",
+            "--locked",
+            "--no-emit-local",
+            "--no-all-extras",
+            "--no-hashes",
+            "--output-file",
+            "requirements.txt",
+          ]
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # Security
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  # - repo: https://github.com/pypa/pip-audit
+  #   rev: v2.10.0
+  #   hooks:
+  #     - id: pip-audit
+  #       args: ["-r", "requirements.txt"]
+  #       pass_filenames: false
+  #       always_run: true
+
+  # - repo: https://github.com/PyCQA/bandit
+  #   rev: 1.7.9
+  #   hooks:
+  #     - id: bandit
+  #       args: ["-q", "-r", "raspenbeere"]
+  #       pass_filenames: false
+
+  # - repo: https://github.com/returntocorp/semgrep
+  #   rev: v1.151.0
+  #   hooks:
+  #     - id: semgrep
+  #       pass_filenames: false
+  #       args:
+  #         - "--config"
+  #         - "p/ci"
+  #         - "--config"
+  #         - "p/python"
+  #         # Already done by gitleaks
+  #         # - "--config"
+  #         # - "p/secrets"
+  #         - "--error"
+  #         - "--skip-unknown-extensions"
+  #         - "raspenbeere"
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+ci:
+  # Leave pip-audit to only run locally and not in CI
+  # pre-commit.ci does not allow network calls
+  skip: [pip-audit]
