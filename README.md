@@ -1,55 +1,64 @@
-# ewelink-api
+# ewelink-api (Python)
 
-An eWeLink Wrapper for Python.
-Check the [API Documentation](https://ewelink-api.vercel.app/docs/introduction).
+Python async wrapper for eWeLink based on the API surface of `skydiver/ewelink-api`.
 
-## Python
+## Requirements
 
-Python 3.12+
+- Python 3.12+
 
-## Example
+## Install
 
-```py
+```bash
+pip install -e .
+```
+
+## Quick Start
+
+```python
+import asyncio
 import ewelink
 from ewelink import Client, DeviceOffline
 
-@ewelink.login('password', 'user.address@email.com')
-async def main(client: Client):
-    print(client.region)
-    print(client.user.info)
-    print(client.devices)
 
-    device = client.get_device('10008ecfd9') #single channel device
-    device2 = client.get_device('10007fgah9') #four channel device
+@ewelink.login("your-password", "user@example.com")
+async def main(client: Client) -> None:
+    devices = await client.get_devices()
+    print(devices)
 
-    print(device.params)
-    print(device.state)
-    print(device.created_at)
-    print("Brand Name:", device.brand.name, "Logo URL:", device.brand.logo.url)
-    print("Device online?", device.online)
+    if not devices:
+        return
 
+    device_id = devices[0]["deviceid"]
     try:
-        await device.on()
+        await client.set_device_power_state(device_id, "on")
     except DeviceOffline:
-        print("Device is offline!")
+        print("Device is offline")
+
+
+asyncio.run(main())
 ```
 
-### Multi channel device control (First method)
+## Implemented API Surface
 
-```py
-    try:
-        await device2.on[0, 2]() #turns on 1st and 3rd channel
-        await device2.off[1, 3]() #turns off 2nd and 4th channel
-    except DeviceOffline:
-        print("Device is offline!")
-```
+- `Client.get_region()`
+- `Client.get_credentials()`
+- `Client.get_devices()`
+- `Client.get_device(device_id)`
+- `Client.get_device_channel_count(device)`
+- `Client.get_device_power_state(device, channel=0)`
+- `Client.set_device_power_state(device_id, state, channel=None)`
+- `Client.toggle_device(device_id, channel=None)`
+- `Client.get_device_current_temperature(device)`
+- `Client.get_device_current_humidity(device)`
+- `Client.get_device_power_usage(device)`
+- `Client.get_device_firmware_version(device)`
+- `Client.open_websocket(on_message)`
+- `Client.get_ws_device_power_state(device_id, channel=0)`
+- `Client.set_ws_device_power_state(device_id, state, channel=None)`
+- `Client.save_devices_cache(path)` / `Client.load_devices_cache(path)`
+- `Client.save_arp_table(path)` / `Client.load_arp_table(path)`
 
-### Multi channel device control (Second method)
+## Notes
 
-```py
-    try:
-        await device2.edit(Power.on[0, 2]) #turns on 1st and 3rd channel
-        await device2.edit(Power.off[1, 3]) #turns off 2nd and 4th channel
-    except DeviceOffline:
-        print("Device is offline!")
-```
+- This package uses the eWeLink cloud endpoints and requires valid account credentials.
+- API behavior can vary by region/account and eWeLink backend updates.

@@ -17,10 +17,13 @@ classifiers = [
 dependencies = [
   "aiohttp>=3.13.3",
   "python-dotenv>=1.2.1",
+  "websockets>=15.0.1",
 ]
 
 [dependency-groups]
 dev = [
+  "pytest>=8.4.2",
+  "pytest-asyncio>=1.2.0",
   "pre-commit>=4.5.1",
 ]
 
