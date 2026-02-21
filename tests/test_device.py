@@ -1,9 +1,10 @@
 import os
 import unittest
+from typing import cast
 
 import ewelink
-from ewelink import Client
-from ewelink.models.enumerations import Power
+from ewelink import Client, Power
+from ewelink.models import Device
 
 
 class TestUser(unittest.IsolatedAsyncioTestCase):
@@ -19,6 +20,12 @@ class TestUser(unittest.IsolatedAsyncioTestCase):
         device_off = client.get_device(self.device_id_off)
         device_on = client.get_device(self.device_id_on)
 
+        # Test type
+        self.assertIsInstance(device_off, Device)
+        self.assertIsInstance(device_on, Device)
+        device_off = cast(Device, device_off)
+        device_on = cast(Device, device_on)
+
         # Test id
         self.assertEqual(device_on.id, self.device_id_on)
         self.assertEqual(device_off.id, self.device_id_off)
@@ -30,6 +37,9 @@ class TestUser(unittest.IsolatedAsyncioTestCase):
         # Test state
         self.assertEqual(device_on.state, Power.off)
         self.assertEqual(device_off.state, Power.off)
+
+        test = client.get_device(self.device_id_on).off
+        print(test)
 
 
 if __name__ == "__main__":

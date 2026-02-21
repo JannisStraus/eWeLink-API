@@ -90,4 +90,4 @@ class ClientUser:
             if data["clientInfo"].get("romVersion", None)
             else None,
         )
-        self.data: Object = Object(data, name="UserData")
+        self.data: Object = Object(data)

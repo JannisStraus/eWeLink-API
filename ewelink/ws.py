@@ -7,7 +7,7 @@ import aiohttp
 from .constants import Constants as constants
 from .exceptions import DeviceOffline
 from .http import HttpClient
-from .models import ClientUser
+from .models.user import ClientUser
 from .utils import nonce
 
 
@@ -50,7 +50,7 @@ class WebSocketClient:
     def set_devices(self, devices: dict[str, DeviceInterface]):
         self.devices = devices
 
-    async def create_websocket(self, domain: str, port: int | str):
+    async def create_websocket(self, domain: str, port: int | str) -> None:
         self.ws = await self.session.ws_connect(f"wss://{domain}:{port}/api/ws")
         await self.ws.send_json(
             {
@@ -97,7 +97,7 @@ class WebSocketClient:
             result = None
         return result
 
-    async def poll_event(self):
+    async def poll_event(self) -> None:
         try:
             while self.ws and not self.ws.closed:
                 raw_msg = await self.ws.receive()
@@ -145,7 +145,7 @@ class WebSocketClient:
                     fut.cancel()
             self._futures["update"].clear()
 
-    async def ping_hb(self):
+    async def ping_hb(self) -> None:
         try:
             while self.ws and not self.ws.closed:
                 await asyncio.sleep(self.heartbeat)
@@ -154,7 +154,7 @@ class WebSocketClient:
         except asyncio.CancelledError:
             raise
 
-    async def close(self):
+    async def close(self) -> None:
         tasks = [task for task in (self._ping_task, self._poll_task) if task]
         for task in tasks:
             task.cancel()

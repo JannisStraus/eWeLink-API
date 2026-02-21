@@ -6,6 +6,8 @@ aiohttp==3.13.3
     # via ewelink-api
 aiosignal==1.4.0
     # via aiohttp
+annotated-types==0.7.0
+    # via pydantic
 attrs==25.4.0
     # via aiohttp
 frozenlist==1.8.0
@@ -22,9 +24,19 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
+pydantic==2.12.5
+    # via ewelink-api
+pydantic-core==2.41.5
+    # via pydantic
 python-dotenv==1.2.1
     # via ewelink-api
-typing-extensions==4.15.0 ; python_full_version < '3.13'
-    # via aiosignal
+typing-extensions==4.15.0
+    # via
+    #   aiosignal
+    #   pydantic
+    #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via pydantic
 yarl==1.22.0
     # via aiohttp

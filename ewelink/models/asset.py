@@ -38,7 +38,9 @@ class Asset:
 
         return str()
 
-    async def save(self, filename: str = "logo.png", path: str | None = None) -> int | None:
+    async def save(
+        self, filename: str = "logo.png", path: str | None = None
+    ) -> int | None:
         path = path if path else os.getcwd()
         with open(path.strip(f"/{filename.strip('/')}"), "w") as file:
             return file.write(await self.read())

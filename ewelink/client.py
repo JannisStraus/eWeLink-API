@@ -51,7 +51,7 @@ class Client:
         self.user = None
         self._devices: dict[str, Device] = {}
 
-    async def login(self):
+    async def login(self) -> None:
         self.loop = asyncio.get_event_loop()
         await self.http._create_session(loop=self.loop)
         self.user = ClientUser(data=await self.http.login(), http=self.http)
@@ -65,17 +65,19 @@ class Client:
         self.ws.set_devices(self._devices)
 
     def _get_state(self) -> Connection:
+        if self.ws is None:
+            raise ValueError()  # TODO
         return Connection(ws=self.ws, http=self.http)
 
     def get_device(self, id: str) -> Device | None:
         return self.devices.get(id)
 
     @property
-    def devices(self):
+    def devices(self) -> Devices:
         return Devices(self._devices.values())
 
     @property
-    def region(self):
+    def region(self) -> Region:
         return Region[self.http.region.upper()]
 
     @classmethod
