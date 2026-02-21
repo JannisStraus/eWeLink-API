@@ -1,3 +1,7 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = [ "hatchling>=1.25" ]
+
 [project]
 name = "ewelink-api"
 version = "0.1.0"
@@ -10,7 +14,10 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
 ]
-dependencies = [  ]
+dependencies = [
+  "aiohttp>=3.13.3",
+  "python-dotenv>=1.2.1",
+]
 
 [dependency-groups]
 dev = [
@@ -60,10 +67,6 @@ lint.unfixable = [
   "F401", # Do not fix unused imports, it's annoying during development
 ]
 lint.pydocstyle.convention = "google"
-
-[tool.pytest.ini_options]
-log_level = "INFO"
-log_cli = true
 
 [tool.mypy]
 # Ensure full coverage
