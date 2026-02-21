@@ -93,10 +93,11 @@ class Client:
             raise ConfigurationError("password and email/phone_number are required for login")
 
         payload: dict[str, Any] = {
+            "appid": self.app_id,
             "password": md5(self.password.encode("utf-8")).hexdigest(),
             "version": 8,
-            "ts": int(datetime.now(UTC).timestamp()),
-            "nonce": uuid4().hex,
+            "ts": self._timestamp(),
+            "nonce": self._nonce(),
         }
         if self.email:
             payload["email"] = self.email
@@ -163,14 +164,41 @@ class Client:
         return switch if isinstance(switch, str) else None
 
     def _build_power_payload(self, device_id: str, state: str, channel: int | None) -> dict[str, Any]:
-        if channel is None:
-            return {"deviceid": device_id, "params": {"switch": state}}
-        return {
+        base_payload: dict[str, Any] = {
             "deviceid": device_id,
-            "params": {
-                "switches": [{"outlet": channel, "switch": state}],
-            },
+            "appid": self.app_id,
+            "nonce": self._nonce(),
+            "ts": self._timestamp(),
+            "version": 8,
         }
+        if channel is None:
+            base_payload["params"] = {"switch": state}
+            return base_payload
+        base_payload["params"] = {
+            "switches": [{"outlet": channel, "switch": state}],
+        }
+        return base_payload
+
+    def _timestamp(self) -> int:
+        return int(datetime.now(UTC).timestamp())
+
+    def _nonce(self) -> str:
+        return uuid4().hex
+
+    def _build_wss_login_payload(self) -> str:
+        timestamp = self._timestamp()
+        payload = {
+            "action": "userOnline",
+            "at": self.at,
+            "apikey": self.api_key,
+            "appid": self.app_id,
+            "nonce": self._nonce(),
+            "ts": timestamp,
+            "userAgent": "app",
+            "sequence": int(timestamp * 1000),
+            "version": 8,
+        }
+        return json.dumps(payload)
 
     async def set_device_power_state(self, device_id: str, state: str, *, channel: int | None = None) -> dict[str, Any]:
         if state not in {"on", "off"}:
@@ -262,17 +290,7 @@ class Client:
         await self.get_credentials()
         websocket_url = f"wss://{self.region}-pconnect3.coolkit.cc:8080/api/ws"
         socket = await websockets.connect(websocket_url)
-        await socket.send(
-            json.dumps(
-                {
-                    "action": "userOnline",
-                    "at": self.at,
-                    "apikey": self.api_key,
-                    "userAgent": "ewelink-api-python",
-                    "sequence": str(int(datetime.now(UTC).timestamp() * 1000)),
-                }
-            )
-        )
+        await socket.send(self._build_wss_login_payload())
 
         async def _reader() -> None:
             async for raw_message in socket:
